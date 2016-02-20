@@ -9,6 +9,7 @@ import numpy as np
 import time
 from PIL import Image
 from io import BytesIO
+import scipy.misc
 
 static_path = os.path.join(os.getcwd(), "static")
 
@@ -51,35 +52,27 @@ class MainHandler(tornado.web.RequestHandler):
     def get(self):
         self.redirect("/static/v4.final.html")
 
-class JsonFrameHandler(tornado.web.RequestHandler):
-    def post(self, num):
-        print num
-        data = json.loads(self.request.body)
-        prefix_len = len("data:image/png;base64,")
-        img = data["image"][prefix_len:]
-        print np.asarray(Image.open(BytesIO(base64.b64decode(img)))).shape
-        self.write(json.dumps({
-            "keyLeft": False,
-            "keyRight": False,
-            "keyFaster": True,
-            "keySlower": False,
-        }))
+
 
 class FrameHandler(tornado.web.RequestHandler):
     def post(self, num):
-        print num
-        ar = np.fromstring(self.request.files["image"][0]["body"], dtype="uint8")
-        height = int(self.get_arguments("height")[0])
-        width = int(self.get_arguments("width")[0])
-        ar = ar.reshape(height, width, 4)
-        speed = float(self.get_arguments("speed")[0])
-        offset = float(self.get_arguments("offset")[0])
-        position = float(self.get_arguments("position")[0])
-        trafficOffsets = json.loads(self.get_arguments("trafficOffsets")[0])
-        trafficPositions = json.loads(self.get_arguments("trafficPositions")[0])
+        data = json.loads(self.request.body)
+        prefix_len = len("data:image/png;base64,")
+        img = data["image"][prefix_len:]
+        decoded = base64.b64decode(img)
+        imaged = Image.open(BytesIO(decoded))
+        ar = scipy.misc.fromimage(imaged)
+       
+        height = data["height"]
+        width = data["width"]
+        speed = data["speed"]
+        offset = data["offset"]
+        position = data["position"]
+        trafficOffsets = data["trafficOffsets"]
+        trafficPositions = data["trafficPositions"]
         # print num, speed, offset, position, trafficPositions[0], trafficOffsets[0]
         minDist = min([abs(p - position) for p in trafficPositions])
-        print minDist
+        print num, minDist, ar.shape
         # img = Image.fromarray(ar, 'RGBA')
         # img.save('test%s.png' % num)
 
@@ -98,7 +91,6 @@ def make_app():
     return tornado.web.Application([
         (r"/", MainHandler),
         (r"/frame/(.*)", FrameHandler),
-        (r"/jsonframe/(.*)", JsonFrameHandler),
         (r"/static/(.*)", tornado.web.StaticFileHandler, {"path": static_path})
     ], debug=True)
 

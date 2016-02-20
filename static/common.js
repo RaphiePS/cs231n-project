@@ -103,13 +103,21 @@ function telemetry(cb) {
     console.time("Roundtrip")
     console.time("Render")
     console.log("STARTING NUM", window.raphcounter)
-   
+    var trafficOffsets = cars.map(function(c) { return c.offset })
+    var trafficPositions = cars.map(function(c) { return c.z })
     $.ajax({
         type: 'POST',
         // url: '/frame/' + raphcounter,
-        url: '/jsonframe/' + raphcounter,
+        url: '/frame/' + raphcounter,
         data: JSON.stringify({
-          image: canvas.toDataURL("image/png")
+          image: canvas.toDataURL("image/png"),
+          height: height,
+          width: width,
+          speed: speed,
+          position: position + playerZ,
+          offset: playerX,
+          trafficOffsets: trafficOffsets,
+          trafficPositions: trafficPositions
         }),
         contentType: "application/json"
     }).done(function(data) {
@@ -120,6 +128,31 @@ function telemetry(cb) {
     console.log("FIRED OFF AJAX REQUEST", window.raphcounter) 
 
 }
+
+// function telemetry(cb) {
+//     window.raphcounter++;
+//     console.time("Roundtrip")
+//     console.time("Render")
+//     console.log("STARTING NUM", window.raphcounter)
+//     var blob = ctx.getImageData(0, 0, width, height).data
+//     window.blob = blob;
+
+//     $.ajax({
+//         type: 'POST',
+//         // url: '/frame/' + raphcounter,
+//         url: '/binaryframe/' + raphcounter,
+//         data: JSON.stringify({
+//           image: btoa(blob)
+//         }),
+//         contentType: "application/json"
+//     }).done(function(data) {
+//         console.log("AJAX COMPLETED", window.raphcounter) 
+//         console.timeEnd("Roundtrip")
+//         cb(data);
+//     });
+//     console.log("FIRED OFF AJAX REQUEST", window.raphcounter) 
+
+// }
 // function telemetry(cb) {
 //     window.raphcounter++;
 //     console.time("Roundtrip")
@@ -155,6 +188,27 @@ function telemetry(cb) {
 //         cb(data);
 //     });
 //     console.log("FIRED OFF AJAX REQUEST", window.raphcounter) 
+
+// }
+
+// function telemetry(cb) {
+//     window.raphcounter++;
+//     console.time("Roundtrip")
+//     var blob = ctx.getImageData(0, 0, width, height).data
+//     window.blob = blob;
+//     console.log("GRABBED IMAGE FROM CANVAS", window.raphcounter) 
+   
+//     var oReq = new XMLHttpRequest();
+//     oReq.open("POST", "/binaryframe/" + raphcounter, true);
+
+//     oReq.onload = function(oEvent) {
+//       console.timeEnd("Roundtrip")
+//       console.log("GOT RESP")
+//       console.log(oReq.response)
+//       cb(oReq.response)
+//     };
+
+//     oReq.send(blob.buffer);
 
 // }
 
