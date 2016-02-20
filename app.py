@@ -8,6 +8,7 @@ import json
 import numpy as np
 import time
 from PIL import Image
+from io import BytesIO
 
 static_path = os.path.join(os.getcwd(), "static")
 
@@ -50,8 +51,23 @@ class MainHandler(tornado.web.RequestHandler):
     def get(self):
         self.redirect("/static/v4.final.html")
 
+class JsonFrameHandler(tornado.web.RequestHandler):
+    def post(self, num):
+        print num
+        data = json.loads(self.request.body)
+        prefix_len = len("data:image/png;base64,")
+        img = data["image"][prefix_len:]
+        print np.asarray(Image.open(BytesIO(base64.b64decode(img)))).shape
+        self.write(json.dumps({
+            "keyLeft": False,
+            "keyRight": False,
+            "keyFaster": True,
+            "keySlower": False,
+        }))
+
 class FrameHandler(tornado.web.RequestHandler):
     def post(self, num):
+        print num
         ar = np.fromstring(self.request.files["image"][0]["body"], dtype="uint8")
         height = int(self.get_arguments("height")[0])
         width = int(self.get_arguments("width")[0])
@@ -82,6 +98,7 @@ def make_app():
     return tornado.web.Application([
         (r"/", MainHandler),
         (r"/frame/(.*)", FrameHandler),
+        (r"/jsonframe/(.*)", JsonFrameHandler),
         (r"/static/(.*)", tornado.web.StaticFileHandler, {"path": static_path})
     ], debug=True)
 

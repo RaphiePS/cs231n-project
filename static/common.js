@@ -97,36 +97,66 @@ if (!window.requestAnimationFrame) { // http://paulirish.com/2011/requestanimati
 // GAME LOOP helpers
 //=========================================================================
 window.raphcounter = 0;
+
 function telemetry(cb) {
     window.raphcounter++;
     console.time("Roundtrip")
     console.time("Render")
-    var fd = new FormData();
-    var blob = ctx.getImageData(0, 0, width, height).data
-    window.blob = blob;
-    fd.append("image", new Blob([blob]));
-    fd.append("height", height);
-    fd.append("width", width);
-    fd.append("speed", speed);
-    fd.append("position", position + playerZ);
-    fd.append("offset", playerX);
-    var trafficOffsets = cars.map(function(c) { return c.offset })
-    var trafficPositions = cars.map(function(c) { return c.z })
-    fd.append("trafficOffsets", JSON.stringify(trafficOffsets));
-    fd.append("trafficPositions", JSON.stringify(trafficPositions));
-
-    console.timeEnd("Render") 
+    console.log("STARTING NUM", window.raphcounter)
+   
     $.ajax({
         type: 'POST',
-        url: '/frame/' + raphcounter,
-        data: fd,
-        processData: false,
-        contentType: false
+        // url: '/frame/' + raphcounter,
+        url: '/jsonframe/' + raphcounter,
+        data: JSON.stringify({
+          image: canvas.toDataURL("image/png")
+        }),
+        contentType: "application/json"
     }).done(function(data) {
+        console.log("AJAX COMPLETED", window.raphcounter) 
         console.timeEnd("Roundtrip")
         cb(data);
     });
+    console.log("FIRED OFF AJAX REQUEST", window.raphcounter) 
+
 }
+// function telemetry(cb) {
+//     window.raphcounter++;
+//     console.time("Roundtrip")
+//     console.time("Render")
+//     console.log("STARTING NUM", window.raphcounter)
+//     var fd = new FormData();
+//     var blob = ctx.getImageData(0, 0, width, height).data
+//     window.blob = blob;
+//     console.log("GRABBED IMAGE FROM CANVAS", window.raphcounter) 
+//     fd.append("image", new Blob([blob]));
+//     fd.append("height", height);
+//     fd.append("width", width);
+//     fd.append("speed", speed);
+//     fd.append("position", position + playerZ);
+//     fd.append("offset", playerX);
+//     var trafficOffsets = cars.map(function(c) { return c.offset })
+//     var trafficPositions = cars.map(function(c) { return c.z })
+//     fd.append("trafficOffsets", JSON.stringify(trafficOffsets));
+//     fd.append("trafficPositions", JSON.stringify(trafficPositions));
+//     console.log("ATTACHED EVERYTHING TO REQUEST", window.raphcounter) 
+
+//     console.timeEnd("Render") 
+//     $.ajax({
+//         type: 'POST',
+//         // url: '/frame/' + raphcounter,
+//         url: 'http://localhost:5000/frame/' + raphcounter,
+//         data: fd,
+//         processData: false,
+//         contentType: false
+//     }).done(function(data) {
+//         console.log("AJAX COMPLETED", window.raphcounter) 
+//         console.timeEnd("Roundtrip")
+//         cb(data);
+//     });
+//     console.log("FIRED OFF AJAX REQUEST", window.raphcounter) 
+
+// }
 
 var Game = {  // a modified version of the game loop from my previous boulderdash game - see http://codeincomplete.com/posts/2011/10/25/javascript_boulderdash/#gameloop
 
