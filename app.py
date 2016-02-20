@@ -17,7 +17,6 @@ class MainHandler(tornado.web.RequestHandler):
 
 class FrameHandler(tornado.web.RequestHandler):
     def post(self, num):
-        # j = json.loads(self.request.body)
         ar = np.fromstring(self.request.files["image"][0]["body"], dtype="uint8")
         height = int(self.get_arguments("height")[0])
         width = int(self.get_arguments("width")[0])
