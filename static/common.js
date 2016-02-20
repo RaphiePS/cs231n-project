@@ -108,6 +108,13 @@ function telemetry(cb) {
     fd.append("height", height);
     fd.append("width", width);
     fd.append("speed", speed);
+    fd.append("position", position + playerZ);
+    fd.append("offset", playerX);
+    var trafficOffsets = cars.map(function(c) { return c.offset })
+    var trafficPositions = cars.map(function(c) { return c.z })
+    fd.append("trafficOffsets", JSON.stringify(trafficOffsets));
+    fd.append("trafficPositions", JSON.stringify(trafficPositions));
+
     console.timeEnd("Render") 
     $.ajax({
         type: 'POST',
@@ -141,6 +148,8 @@ var Game = {  // a modified version of the game loop from my previous boulderdas
           dt     = 0,
           gdt    = 0;
 
+      window.debugFrame = frame;
+      window.debugRender = render;
       function frame() {
         now = Util.timestamp();
         dt  = Math.min(1, (now - last) / 1000); // using requestAnimationFrame have to be able to handle large delta's caused when it 'hibernates' in a background or non-visible tab
