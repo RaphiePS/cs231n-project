@@ -110,7 +110,7 @@ function telemetry(cb) {
         // url: '/frame/' + raphcounter,
         url: '/frame/' + raphcounter,
         data: JSON.stringify({
-          image: canvas.toDataURL("image/png"),
+          image: canvas.toDataURL("image/jpeg"),
           height: height,
           width: width,
           speed: speed,

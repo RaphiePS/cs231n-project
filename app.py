@@ -9,7 +9,6 @@ import numpy as np
 import time
 from PIL import Image
 from io import BytesIO
-import scipy.misc
 
 static_path = os.path.join(os.getcwd(), "static")
 
@@ -57,11 +56,11 @@ class MainHandler(tornado.web.RequestHandler):
 class FrameHandler(tornado.web.RequestHandler):
     def post(self, num):
         data = json.loads(self.request.body)
-        prefix_len = len("data:image/png;base64,")
+        prefix_len = len("data:image/jpeg;base64,")
         img = data["image"][prefix_len:]
         decoded = base64.b64decode(img)
         imaged = Image.open(BytesIO(decoded))
-        ar = scipy.misc.fromimage(imaged)
+        ar = np.asarray(imaged)
        
         height = data["height"]
         width = data["width"]
