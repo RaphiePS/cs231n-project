@@ -236,7 +236,8 @@ var Game = {  // a modified version of the game loop from my previous boulderdas
       window.debugRender = render;
       function frame() {
         now = Util.timestamp();
-        dt  = Math.min(1, (now - last) / 1000); // using requestAnimationFrame have to be able to handle large delta's caused when it 'hibernates' in a background or non-visible tab
+        dt = 0.05;
+        // dt  = Math.min(1, (now - last) / 1000); // using requestAnimationFrame have to be able to handle large delta's caused when it 'hibernates' in a background or non-visible tab
         gdt = gdt + dt;
         while (gdt > step) {
           gdt = gdt - step;
@@ -245,6 +246,7 @@ var Game = {  // a modified version of the game loop from my previous boulderdas
         render();
         stats.update();
         last = now;
+        // requestAnimationFrame(frame, canvas); 
         telemetry(function(data) {
           data = JSON.parse(data);
           keyLeft = data["keyLeft"]
@@ -255,7 +257,7 @@ var Game = {  // a modified version of the game loop from my previous boulderdas
         })
       }
       frame(); // lets get this party started
-      Game.playMusic();
+      // Game.playMusic();
     });
   },
 

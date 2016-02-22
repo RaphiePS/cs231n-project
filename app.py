@@ -78,6 +78,9 @@ class FrameHandler(tornado.web.RequestHandler):
         # informally, in lane if 0.6 <= offset <= 0.8 or offset <= 0.1
         # we might wanna double-check this
 
+        # one second forward pass
+        time.sleep(1)
+
         self.write(json.dumps({
             "keyLeft": False,
             "keyRight": False,
