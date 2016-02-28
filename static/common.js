@@ -2,6 +2,8 @@
 // minimalist DOM helpers
 //=========================================================================
 
+var COLLISION_OCCURED = false;
+
 var Dom = {
 
   get:  function(id)                     { return ((id instanceof HTMLElement) || (id === document)) ? id : document.getElementById(id); },
@@ -96,121 +98,103 @@ if (!window.requestAnimationFrame) { // http://paulirish.com/2011/requestanimati
 //=========================================================================
 // GAME LOOP helpers
 //=========================================================================
-window.raphcounter = 0;
 
-function telemetry(cb) {
-    window.raphcounter++;
-    console.time("Roundtrip")
-    console.time("Render")
-    console.log("STARTING NUM", window.raphcounter)
-    var trafficOffsets = cars.map(function(c) { return c.offset })
-    var trafficPositions = cars.map(function(c) { return c.z })
-    $.ajax({
-        type: 'POST',
-        // url: '/frame/' + raphcounter,
-        url: '/frame/' + raphcounter,
-        data: JSON.stringify({
-          image: canvas.toDataURL("image/jpeg"),
-          height: height,
-          width: width,
-          speed: speed,
-          position: position + playerZ,
-          offset: playerX,
-          trafficOffsets: trafficOffsets,
-          trafficPositions: trafficPositions
-        }),
-        contentType: "application/json"
-    }).done(function(data) {
-        console.log("AJAX COMPLETED", window.raphcounter) 
-        console.timeEnd("Roundtrip")
-        cb(data);
-    });
-    console.log("FIRED OFF AJAX REQUEST", window.raphcounter) 
+var downsizeCanvas = document.createElement("canvas");
+var downsizeCtx = downsizeCanvas.getContext("2d");
+downsizeCanvas.width = 84;
+downsizeCanvas.height = 84;
+var downsizeImage = new Image()
 
+function processFrame() {
+  downsizeImage.src = canvas.toDataURL()
+  downsizeCtx.drawImage(downsizeImage, 0, 0, 84, 84)
+  var imageData = downsizeCtx.getImageData(0, 0, 84, 84);
+  var counter = 0;
+  var downsized = ""
+  var lum = [0.2126, 0.7152, 0.0722];
+  var acc = 0;
+  for (var i = 0; i < imageData.data.length; i++) {
+    var d = imageData.data[i];
+    switch (i % 4) {
+      case 0: acc += lum[0] * d; continue;
+      case 1: acc += lum[1] * d; continue;
+      case 2:
+        acc += lum[2] * d;
+        downsized += String.fromCharCode(Math.round(acc));
+        acc = 0;
+        continue;
+      case 3: continue;
+    }
+  }
+  return btoa(downsized);
 }
 
-// function telemetry(cb) {
-//     window.raphcounter++;
-//     console.time("Roundtrip")
-//     console.time("Render")
-//     console.log("STARTING NUM", window.raphcounter)
-//     var blob = ctx.getImageData(0, 0, width, height).data
-//     window.blob = blob;
+function reward() {
+  var COLLISION_COST = -1;
+  var OFF_ROAD_COST = -0.8;
+  var LANE_PENALTY = 0.5;
 
-//     $.ajax({
-//         type: 'POST',
-//         // url: '/frame/' + raphcounter,
-//         url: '/binaryframe/' + raphcounter,
-//         data: JSON.stringify({
-//           image: btoa(blob)
-//         }),
-//         contentType: "application/json"
-//     }).done(function(data) {
-//         console.log("AJAX COMPLETED", window.raphcounter) 
-//         console.timeEnd("Roundtrip")
-//         cb(data);
-//     });
-//     console.log("FIRED OFF AJAX REQUEST", window.raphcounter) 
+  if (COLLISION_OCCURED) {
+    return {reward: COLLISION_COST, terminal: true}
+  }
+  var pos = Math.abs(playerX);
+  if (pos > 0.8) {
+    return {reward: OFF_ROAD_COST, terminal: true}
+  }
+  var inLane = pos <= 0.1 || (pos >= 0.6 && pos <= 0.8)
+  var penalty = inLane ? 1 : LANE_PENALTY;
+  return {reward: penalty * (speed / maxSpeed), terminal: false};
+}
 
-// }
-// function telemetry(cb) {
-//     window.raphcounter++;
-//     console.time("Roundtrip")
-//     console.time("Render")
-//     console.log("STARTING NUM", window.raphcounter)
-//     var fd = new FormData();
-//     var blob = ctx.getImageData(0, 0, width, height).data
-//     window.blob = blob;
-//     console.log("GRABBED IMAGE FROM CANVAS", window.raphcounter) 
-//     fd.append("image", new Blob([blob]));
-//     fd.append("height", height);
-//     fd.append("width", width);
-//     fd.append("speed", speed);
-//     fd.append("position", position + playerZ);
-//     fd.append("offset", playerX);
-//     var trafficOffsets = cars.map(function(c) { return c.offset })
-//     var trafficPositions = cars.map(function(c) { return c.z })
-//     fd.append("trafficOffsets", JSON.stringify(trafficOffsets));
-//     fd.append("trafficPositions", JSON.stringify(trafficPositions));
-//     console.log("ATTACHED EVERYTHING TO REQUEST", window.raphcounter) 
+var actRep = 4;
+var repCount = 0;
+var rewardTotal = 0;
+function telemetry(frame) {
+    var downsized = processFrame()
+    var r = reward()
+    COLLISION_OCCURED = false;
+    if (r.terminal) {
+       $.ajax({
+          type: 'POST',
+          url: '/frame',
+          data: JSON.stringify({
+            image: downsized,
+            reward: r.reward,
+            terminal: true
+          }),
+          contentType: "application/json"
+      }).done(function(data) {
+        location.reload();
+      });
+      return;
+    }
+    rewardTotal += r.reward;
+    if (repCount == actRep) {
+      $.ajax({
+        type: 'POST',
+        url: '/frame',
+        data: JSON.stringify({
+          image: downsized,
+          reward: rewardTotal / actRep,
+          terminal: false
+        }),
+        contentType: "application/json"
+      }).done(function(data) {
+          data = JSON.parse(data);
+          keyLeft = data["keyLeft"]
+          keyRight = data["keyRight"]
+          keyFaster = data["keyFaster"]
+          keySlower = data["keySlower"]
+          requestAnimationFrame(frame, canvas); 
+      });
+      rewardTotal = 0;
+      repCount = 0;
+    } else {
+      requestAnimationFrame(frame, canvas);
+    }
+    repCount++;
+}
 
-//     console.timeEnd("Render") 
-//     $.ajax({
-//         type: 'POST',
-//         // url: '/frame/' + raphcounter,
-//         url: 'http://localhost:5000/frame/' + raphcounter,
-//         data: fd,
-//         processData: false,
-//         contentType: false
-//     }).done(function(data) {
-//         console.log("AJAX COMPLETED", window.raphcounter) 
-//         console.timeEnd("Roundtrip")
-//         cb(data);
-//     });
-//     console.log("FIRED OFF AJAX REQUEST", window.raphcounter) 
-
-// }
-
-// function telemetry(cb) {
-//     window.raphcounter++;
-//     console.time("Roundtrip")
-//     var blob = ctx.getImageData(0, 0, width, height).data
-//     window.blob = blob;
-//     console.log("GRABBED IMAGE FROM CANVAS", window.raphcounter) 
-   
-//     var oReq = new XMLHttpRequest();
-//     oReq.open("POST", "/binaryframe/" + raphcounter, true);
-
-//     oReq.onload = function(oEvent) {
-//       console.timeEnd("Roundtrip")
-//       console.log("GOT RESP")
-//       console.log(oReq.response)
-//       cb(oReq.response)
-//     };
-
-//     oReq.send(blob.buffer);
-
-// }
 
 var Game = {  // a modified version of the game loop from my previous boulderdash game - see http://codeincomplete.com/posts/2011/10/25/javascript_boulderdash/#gameloop
 
@@ -247,14 +231,7 @@ var Game = {  // a modified version of the game loop from my previous boulderdas
         stats.update();
         last = now;
         // requestAnimationFrame(frame, canvas); 
-        telemetry(function(data) {
-          data = JSON.parse(data);
-          keyLeft = data["keyLeft"]
-          keyRight = data["keyRight"]
-          keyFaster = data["keyFaster"]
-          keySlower = data["keySlower"]
-          requestAnimationFrame(frame, canvas); 
-        })
+        telemetry(frame);
       }
       frame(); // lets get this party started
       // Game.playMusic();

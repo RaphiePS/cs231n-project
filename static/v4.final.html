@@ -200,6 +200,7 @@
         carW = car.sprite.w * SPRITES.SCALE;
         if (speed > car.speed) {
           if (Util.overlap(playerX, playerW, car.offset, carW, 0.8)) {
+            COLLISION_OCCURED = true;
             speed    = car.speed * (car.speed/speed);
             position = Util.increase(car.z, -playerZ, trackLength);
             break;
