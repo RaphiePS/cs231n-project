@@ -8,8 +8,7 @@ import json
 import numpy as np
 import time
 import hyperparameters as hp
-import matplotlib.pyplot as plt
-import matplotlib.cm as cm
+import agent
 from PIL import Image
 from io import BytesIO
 
@@ -27,36 +26,10 @@ class FrameHandler(tornado.web.RequestHandler):
         img = data["image"]
         ar = np.fromstring(base64.decodestring(img), dtype=np.uint8)
         ar = ar.reshape(hp.INPUT_SIZE, hp.INPUT_SIZE)
-        # imaged = Image.open(BytesIO(decoded))
-        # ar = np.asarray(imaged)
+        action = agent.step(image=ar, reward=data["reward"], terminal=data["terminal"])
 
-        # height = data["height"]
-        # width = data["width"]
-        # speed = data["speed"]
-        # offset = data["offset"]
-        # position = data["position"]
-        # trafficOffsets = data["trafficOffsets"]
-        # trafficPositions = data["trafficPositions"]
-        # print num, speed, offset, position, trafficPositions[0], trafficOffsets[0]
-        # minDist = min([abs(p - position) for p in trafficPositions])
-        print ar.shape, data["reward"], data["terminal"]
-        plt.imshow(ar, cmap = cm.Greys_r)
-        plt.show()
-        # img = Image.fromarray(ar, 'RGBA')
-        # img.save('test%s.png' % num)
 
-        # informally, in lane if 0.6 <= offset <= 0.8 or offset <= 0.1
-        # we might wanna double-check this
-
-        # one second forward pass
-        # time.sleep(1)
-
-        self.write(json.dumps({
-            "keyLeft": False,
-            "keyRight": False,
-            "keyFaster": True, #speed < 5000,
-            "keySlower": False, #speed > 5000,
-        }))
+        self.write(json.dumps(action.to_dict()))
 
 
 def make_app():
