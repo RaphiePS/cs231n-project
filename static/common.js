@@ -149,10 +149,10 @@ function reward() {
 var actRep = 4;
 var repCount = 0;
 var rewardTotal = 0;
+var WAS_START = true;
 function telemetry(frame) {
     var downsized = processFrame()
     var r = reward()
-    COLLISION_OCCURED = false;
     if (r.terminal) {
        $.ajax({
           type: 'POST',
@@ -160,7 +160,9 @@ function telemetry(frame) {
           data: JSON.stringify({
             image: downsized,
             reward: r.reward,
-            terminal: true
+            terminal: true,
+            was_start: WAS_START,
+            action: [keyLeft, keyRight, keyFaster, keySlower]
           }),
           contentType: "application/json"
       }).done(function(data) {
@@ -176,7 +178,9 @@ function telemetry(frame) {
         data: JSON.stringify({
           image: downsized,
           reward: rewardTotal / actRep,
-          terminal: false
+          terminal: false,
+          was_start: WAS_START,
+          action: [keyLeft, keyRight, keyFaster, keySlower]
         }),
         contentType: "application/json"
       }).done(function(data) {
@@ -193,6 +197,7 @@ function telemetry(frame) {
       requestAnimationFrame(frame, canvas);
     }
     repCount++;
+    WAS_START = false;
 }
 
 
