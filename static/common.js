@@ -190,6 +190,7 @@ function telemetry(frame) {
           keyFaster = data["keyFaster"]
           keySlower = data["keySlower"]
           requestAnimationFrame(frame, canvas); 
+          WAS_START = false;
       });
       rewardTotal = 0;
       repCount = 0;
@@ -197,7 +198,6 @@ function telemetry(frame) {
       requestAnimationFrame(frame, canvas);
     }
     repCount++;
-    WAS_START = false;
 }
 
 

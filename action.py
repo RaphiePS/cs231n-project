@@ -26,8 +26,8 @@ class Action(object):
     
     def __init__(self, num=None, left=False, right=False, faster=False, slower=False):
         if num is not None:
-            if num > 13 or num < 0:
-                raise ValueError("Invalid num, must be 0-13")
+            if num > 8 or num < 0:
+                raise ValueError("Invalid num, must be 0-8")
             self.num = num
         else:
             if left and right:
@@ -36,6 +36,10 @@ class Action(object):
                 raise ValueError("Invalid action, cannot press both faster and slower")
             self.num = self.action_to_num[(left, right, faster, slower)]
     
+    @classmethod
+    def random_action(self):
+        return Action(np.random.randint(0, self.num_actions))
+
     def to_onehot(self):
         a = np.zeros(self.num_actions)
         a[self.num] = 1

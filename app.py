@@ -8,13 +8,13 @@ import json
 import numpy as np
 import time
 import hyperparameters as hp
-import agent
+from agent import Agent
 from action import Action
 from PIL import Image
 from io import BytesIO
 
 static_path = os.path.join(os.getcwd(), "static")
-
+agent = Agent()
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
@@ -34,10 +34,10 @@ class FrameHandler(tornado.web.RequestHandler):
             data["was_start"]
         )
 
-        print terminal, action, reward, was_start
+        print terminal, action.to_dict(), reward, was_start
 
         # TODO
-        result_action = agent.step(image=ar, reward=data["reward"], terminal=data["terminal"])
+        result_action = agent.step(image=image, reward=reward, terminal=terminal, was_start=was_start, action=action)
         self.write(json.dumps(result_action.to_dict()))
 
 

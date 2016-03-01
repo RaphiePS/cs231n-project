@@ -24,19 +24,20 @@ conv3_out_len = hp.CONV_3_DEPTH * (conv3_out_size ** 2)
 
 with tf.name_scope("input"):
 	s = tf.placeholder(tf.float32, shape=[
-		hp.MINIBATCH_SIZE, # TODO None
+		None,
 		hp.INPUT_SIZE,
 		hp.INPUT_SIZE,
 		hp.AGENT_HISTORY_LENGTH
 	], name="s")
 
 	sp = tf.placeholder(tf.float32, shape=[
-		hp.MINIBATCH_SIZE, # TODO None
+		None, 
 		hp.INPUT_SIZE,
 		hp.INPUT_SIZE,
 		hp.AGENT_HISTORY_LENGTH
 	], name="sp")
 
+# this corresponds to Q
 with tf.name_scope("regular_net"):
 	r_W_conv1 = weight_variable([
 		hp.CONV_1_SIZE,
@@ -73,9 +74,13 @@ with tf.name_scope("regular_net"):
 	r_h_conv3 = tf.nn.relu(conv2d(r_h_conv2, r_W_conv3, hp.CONV_3_STRIDE) + r_b_conv3)
 	r_resized = tf.reshape(r_h_conv3, [-1, conv3_out_len], name="r_resized")
 	r_h_fc1 = tf.nn.relu(tf.matmul(r_resized, r_W_fc1) + r_b_fc1)
+
+	# minibatch_size x # of actions
+	# position (i,j) in r_actions is score for action j in minibatch item i
 	r_actions = tf.matmul(r_h_fc1, r_W_out) + r_b_out
+	best_action = tf.argmax(r_actions, 1)
 
-
+# this corresponds to Q_hat
 with tf.name_scope("target_params"):
 	t_W_conv1 = tf.Variable(r_W_conv1.initialized_value(), trainable=False)
 	t_W_conv2 = tf.Variable(r_W_conv2.initialized_value(), trainable=False)
@@ -95,6 +100,7 @@ with tf.name_scope("target_params"):
 	t_h_fc1 = tf.nn.relu(tf.matmul(t_resized, t_W_fc1) + t_b_fc1)
 	t_actions = tf.matmul(t_h_fc1, t_W_out) + t_b_out
 
+# if you call update_target, it copies Q to Q_hat
 with tf.name_scope("updaters"):
 	regular = [
 		r_W_conv1,
@@ -127,20 +133,31 @@ with tf.name_scope("updaters"):
 
 	for i in range(len(regular)):
 		t, r = target[i], regular[i]
+		# generate the graph and assign nodes from one to the other
 		target_update.append(tf.assign(t, r))
 
+	# tf.group executes all the nodes which are passed to it
 	update_target = tf.group(*target_update)
 
 with tf.name_scope("loss"):
 	actions = tf.placeholder(tf.int32, hp.MINIBATCH_SIZE)
 	rewards = tf.placeholder(tf.float32, hp.MINIBATCH_SIZE)
+
+	# array of zeros/ones
 	terminals = tf.placeholder(tf.int32, hp.MINIBATCH_SIZE)
 	gamma = tf.constant(hp.DISCOUNT_FACTOR, dtype=tf.float32)
 
+	# ys is a vector of size minibatch_size which corresponds to y_j in algorithm 1
 	ys = rewards + tf.to_float(1 - terminals) * gamma * tf.reduce_max(t_actions, reduction_indices=1)
+
+	
 	r_actions_flat = tf.reshape(r_actions, [-1])
+	# Q(s)[a]
+	# vector of size minibatch, each element is the Q value of taking the action that we took
 	gathered = tf.gather(r_actions_flat, hp.MINIBATCH_SIZE * actions)
 	loss = tf.reduce_mean(tf.square(ys - gathered))
+
+	# actually perform one gradient descent step
 	optimizer = tf.train.RMSPropOptimizer(hp.LEARNING_RATE, hp.GRADIENT_MOMENTUM, momentum=hp.SQUARED_GRADIENT_MOMENTUM, epsilon=hp.MIN_SQUARED_GRADIENT)
 	minimize_loss = optimizer.minimize(loss, var_list=regular)
 
