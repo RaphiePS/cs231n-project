@@ -9,6 +9,7 @@ import numpy as np
 import time
 import hyperparameters as hp
 import agent
+from action import Action
 from PIL import Image
 from io import BytesIO
 
@@ -23,13 +24,21 @@ class MainHandler(tornado.web.RequestHandler):
 class FrameHandler(tornado.web.RequestHandler):
     def post(self):
         data = json.loads(self.request.body)
-        img = data["image"]
-        ar = np.fromstring(base64.decodestring(img), dtype=np.uint8)
-        ar = ar.reshape(hp.INPUT_SIZE, hp.INPUT_SIZE)
-        action = agent.step(image=ar, reward=data["reward"], terminal=data["terminal"])
+        ar = np.fromstring(base64.decodestring(data["image"]), dtype=np.uint8)
+        image = ar.reshape(hp.INPUT_SIZE, hp.INPUT_SIZE)
+        left, right, faster, slower = data["action"]
+        terminal, action, reward, was_start = (
+            data["terminal"],
+            Action(left=left, right=right, faster=faster, slower=slower),
+            data["reward"],
+            data["was_start"]
+        )
 
+        print terminal, action, reward, was_start
 
-        self.write(json.dumps(action.to_dict()))
+        # TODO
+        result_action = agent.step(image=ar, reward=data["reward"], terminal=data["terminal"])
+        self.write(json.dumps(result_action.to_dict()))
 
 
 def make_app():
