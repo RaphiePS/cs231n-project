@@ -63,7 +63,6 @@ class TransitionTable(object):
 			# index = np.random.randint(0, len(self.transitions))
 			index = 1
 			s[i], t[i], a[i], r[i], sp[i] = self.get_index(index)
-			print s[i], t[i], a[i], r[i], sp[i]
 		return s, t, a, r, sp
 
 	def add_transition(self, image, terminal, action, reward, was_start):

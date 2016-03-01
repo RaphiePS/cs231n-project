@@ -54,7 +54,15 @@ with tf.name_scope("conv_3"):
 	b_conv3 = bias_variable([hp.CONV_3_DEPTH], name="b_conv3")
 	h_conv3 = tf.nn.relu(conv2d(h_conv2, W_conv3, hp.CONV_3_STRIDE) + b_conv3)
 
+def output_size(in_size, filter_size, stride):
+	return (in_size - filter_size)/stride + 1
+
 conv3_out_size = np.prod(h_conv3.get_shape().as_list()[1:])
+conv1_out_size = output_size(hp.INPUT_SIZE, hp.CONV_1_SIZE, hp.CONV_1_STRIDE)
+conv2_out_size = output_size(conv1_out_size, hp.CONV_2_SIZE, hp.CONV_2_STRIDE)
+conv3_out_sizep = output_size(conv2_out_size, hp.CONV_3_SIZE, hp.CONV_3_STRIDE)
+conv3_out_len = hp.CONV_3_DEPTH * (conv3_out_sizep ** 2)
+print conv3_out_size, conv3_out_len
 
 with tf.name_scope("fc1"):
 	W_fc1 = weight_variable([conv3_out_size, hp.FC_SIZE], name="W_fc1")
