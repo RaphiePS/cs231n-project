@@ -47,7 +47,7 @@ class TransitionTable(object):
 		s, t, a, r, sp = self.get_index(-1)
 		return sp.reshape((1, hp.INPUT_SIZE, hp.INPUT_SIZE, hp.AGENT_HISTORY_LENGTH))
 
-	def get_minibatch(self):
+	def get_minibatch(self, frame_count):
 		# gradient update
 		size = hp.MINIBATCH_SIZE
 		s = np.zeros((size, hp.INPUT_SIZE, hp.INPUT_SIZE, hp.AGENT_HISTORY_LENGTH))
@@ -57,7 +57,8 @@ class TransitionTable(object):
 		r = np.zeros(size)
 
 		for i in range(size):
-			index = np.random.randint(0, len(self.transitions))
+			lower = 3 if frame_count >= self.capacity else 0
+			index = np.random.randint(lower, len(self.transitions))
 			s[i], t[i], a[i], r[i], sp[i] = self.get_index(index)
 		return s, t, a, r, sp
 

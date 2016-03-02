@@ -28,7 +28,7 @@ class Agent(object):
 
 		if self.frame_count % hp.UPDATE_FREQUENCY == 0:
 			
-			s_, t_, a_, r_, sp_ = self.transitions.get_minibatch()
+			s_, t_, a_, r_, sp_ = self.transitions.get_minibatch(self.frame_count)
 			self.sess.run([minimize_loss], feed_dict={s: s_, sp: sp_, actions: a_, rewards: r_, terminals: t_})
 			print "Update took %.2f" % ((time.time() - t) * 1000)
 
