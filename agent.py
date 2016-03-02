@@ -14,6 +14,8 @@ class Agent(object):
 		self.sess = tf.Session()
 		self.transitions = TransitionTable()
 		self.tfSaver = tf.train.Saver()
+		self.timer = dict()
+		self.timer[-1] = time.time()
 		if len(sys.argv) > 2:
 			path = sys.argv[1]
 			self.tfSaver.restore(self.sess, path)
@@ -46,6 +48,8 @@ class Agent(object):
 
 	def step(self, image, reward, terminal, was_start, action):
 		t = time.time()
+		print "Roundtrip from browser took %.2f ms" % ((t - self.timer[self.frame_count]) * 1000)
+
 		self.frame_count += 1
 
 		self.transitions.add_transition(image, terminal, action, reward, was_start)
@@ -66,5 +70,11 @@ class Agent(object):
 
 		if np.random.rand() < self.epsilon():
 			return Action.random_action()
+		t = time.time()
 		img = self.transitions.get_recent()
-		return Action(self.sess.run(best_action[0], feed_dict={s: img}))
+		print "Getting recent transitions took %.2f ms" % ((time.time() - t) * 1000)
+		t = time.time()
+		best = Action(self.sess.run(best_action[0], feed_dict={s: img}))
+		print "Forward pass took %.2f ms" % ((time.time() - t) * 1000)
+		self.timer[self.frame_count] = time.time()
+		return best

@@ -34,7 +34,7 @@ class FrameHandler(tornado.web.RequestHandler):
             data["was_start"]
         )
 
-        print terminal, action.to_dict(), reward, was_start
+        print "FRAME NUM: %d" % (agent.frame_count + 1), terminal, action.to_dict(), reward, was_start
 
         # TODO
         result_action = agent.step(image=image, reward=reward, terminal=terminal, was_start=was_start, action=action)
@@ -50,5 +50,10 @@ def make_app():
 
 if __name__ == "__main__":
     app = make_app()
-    app.listen(8000)
+    if "SERVER_PORT" in os.environ:
+        port = int(os.environ["SERVER_PORT"])
+    else:
+        port = 8000
+    print "LISTENING ON PORT: %d" % port
+    app.listen(port)
     tornado.ioloop.IOLoop.current().start()
