@@ -48,7 +48,7 @@ class Agent(object):
 
 	def step(self, image, reward, terminal, was_start, action):
 		t = time.time()
-		print "Roundtrip from browser took %.2f ms" % ((t - self.timer[self.frame_count]) * 1000)
+		print "Roundtrip from browser took %.2f ms" % ((t - self.timer[-1]) * 1000)
 
 		self.frame_count += 1
 
@@ -76,5 +76,5 @@ class Agent(object):
 		t = time.time()
 		best = Action(self.sess.run(best_action[0], feed_dict={s: img}))
 		print "Forward pass took %.2f ms" % ((time.time() - t) * 1000)
-		self.timer[self.frame_count] = time.time()
+		self.timer[-1] = time.time()
 		return best
