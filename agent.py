@@ -74,7 +74,7 @@ class Agent(object):
 		img = self.transitions.get_recent()
 		print "Getting recent transitions took %.2f ms" % ((time.time() - t) * 1000)
 		t = time.time()
-		best = Action(self.sess.run(best_action[0], feed_dict={s: img}))
+		best = Action(self.sess.run(best_action, feed_dict={s: img})[0])
 		print "Forward pass took %.2f ms" % ((time.time() - t) * 1000)
 		self.timer[-1] = time.time()
 		return best
