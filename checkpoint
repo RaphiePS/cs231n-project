@@ -1,2 +1,0 @@
-model_checkpoint_path: "q-net"
-all_model_checkpoint_paths: "q-net"
