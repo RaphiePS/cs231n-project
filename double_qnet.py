@@ -128,6 +128,8 @@ with tf.name_scope("updaters"):
 		t_b_out,
 	]
 
+	all_vars = regular + target
+
 
 	target_update = []
 
