@@ -5,6 +5,7 @@ import tensorflow as tf
 from double_qnet import update_target, minimize_loss, best_action, s, sp, actions, rewards, terminals, all_vars
 from transition_table import TransitionTable
 import time
+import pickle
 import sys
 
 class Agent(object):
@@ -24,10 +25,15 @@ class Agent(object):
 		path = self.tfSaver.save(self.sess, "q-net", self.frame_count)
 		print "SAVED MODEL TO PATH: %s" % path
 
+	def save_transitions(self):
+		pickle.dump(self.transitions, )
+		pass
+
 	def epsilon(self):
 		return ((hp.FINAL_EXPLORATION - hp.INITIAL_EXPLORATION) / hp.FINAL_EXPLORATION_FRAME) * self.frame_count + hp.INITIAL_EXPLORATION
 
 	def step(self, image, reward, terminal, was_start, action):
+		t = time.time()
 		self.frame_count += 1
 
 		self.transitions.add_transition(image, terminal, action, reward, was_start)
@@ -37,7 +43,7 @@ class Agent(object):
 		if self.frame_count % hp.UPDATE_FREQUENCY == 0:
 			s_, t_, a_, r_, sp_ = self.transitions.get_minibatch(self.frame_count)
 			self.sess.run([minimize_loss], feed_dict={s: s_, sp: sp_, actions: a_, rewards: r_, terminals: t_})
-			self.save_model()
+			print "Update took %.2f ms" % ((time.time() - t) * 1000)
 
 		if self.frame_count % (hp.UPDATE_FREQUENCY * hp.TARGET_UPDATE_FREQUENCY) == 0:
 			self.sess.run(update_target)

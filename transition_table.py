@@ -39,7 +39,6 @@ class TransitionTable(object):
 				current_index -= 1
 				current_transition = self.transitions[current_index]
 
-
 		return (s, t, a, r, sp)
 
 	def get_recent(self):
