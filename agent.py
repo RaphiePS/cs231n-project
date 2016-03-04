@@ -38,7 +38,7 @@ class Agent(object):
 		print "SAVED MODEL TO PATH: %s" % path
 
 	def save_transitions(self):
-		path = "./transitions.pickle" 
+		path = "/data/transitions.pickle" 
 		f = open(path, 'w+')
 		to_dump = {'frame_count': self.frame_count, 'transitions': self.transitions}
 		pickle.dump(to_dump, f)
