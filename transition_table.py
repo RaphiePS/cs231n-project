@@ -5,12 +5,13 @@ from collections import deque
 import pdb
 
 class Transition(object):
-	def __init__(self, image, terminal, action, reward, was_start):
+	def __init__(self, image, terminal, action, reward, was_start, telemetry):
 		self.action = action
 		self.reward = reward
 		self.image = image
 		self.terminal = terminal
 		self.was_start = was_start
+		self.telemetry = telemetry
 
 
 class TransitionTable(object):
@@ -61,6 +62,6 @@ class TransitionTable(object):
 			s[i], t[i], a[i], r[i], sp[i] = self.get_index(index)
 		return s, t, a, r, sp
 
-	def add_transition(self, image, terminal, action, reward, was_start):
-		t = Transition(image, terminal, action, reward, was_start)
+	def add_transition(self, image, terminal, action, reward, was_start, telemetry):
+		t = Transition(image, terminal, action, reward, was_start, telemetry)
 		self.transitions.append(t)
