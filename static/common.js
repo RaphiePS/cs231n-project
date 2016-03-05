@@ -105,7 +105,19 @@ downsizeCanvas.width = 84;
 downsizeCanvas.height = 84;
 var downsizeImage = new Image()
 
-function processFrame() {
+function encode() {
+  var imageData = ctx.getImageData(0, 0, 360, 480);
+  var downsized = "";
+  for (var i = 0; i < imageData.data.length; i++) {
+    var d = imageData.data[i];
+    downsized += String.fromCharCode(d);
+  }
+  return downsized;
+}
+
+function processFrame(foobaz) {
+  // console.time("Process")
+  console.log("I AM BEING CALLED", foobaz)
   downsizeImage.src = canvas.toDataURL()
   downsizeCtx.drawImage(downsizeImage, 0, 0, 84, 84)
   var imageData = downsizeCtx.getImageData(0, 0, 84, 84);
@@ -126,6 +138,7 @@ function processFrame() {
       case 3: continue;
     }
   }
+  // console.timeEnd("Process")
   return btoa(downsized);
 }
 
@@ -148,18 +161,24 @@ function reward() {
 
 var actRep = 4;
 var repCount = 0;
-var rewardTotal = 0;
+var datas = []
 var WAS_START = true;
 function telemetry(frame) {
     var downsized = processFrame()
     var r = reward()
+    var all_data = {
+      collision: COLLISION_OCCURED,
+      position: playerX,
+      speed: speed,
+      max_speed: maxSpeed
+    }
     if (r.terminal) {
        $.ajax({
           type: 'POST',
           url: '/frame',
           data: JSON.stringify({
             image: downsized,
-            reward: r.reward,
+            all_data: [all_data],
             terminal: true,
             was_start: WAS_START,
             action: [keyLeft, keyRight, keyFaster, keySlower]
@@ -170,14 +189,14 @@ function telemetry(frame) {
       });
       return;
     }
-    rewardTotal += r.reward;
+    datas.push(all_data)
     if (repCount == actRep) {
       $.ajax({
         type: 'POST',
         url: '/frame',
         data: JSON.stringify({
           image: downsized,
-          reward: rewardTotal / actRep,
+          all_data: datas,
           terminal: false,
           was_start: WAS_START,
           action: [keyLeft, keyRight, keyFaster, keySlower]
@@ -191,6 +210,7 @@ function telemetry(frame) {
           keySlower = data["keySlower"]
           requestAnimationFrame(frame, canvas); 
           WAS_START = false;
+          datas = [];
       });
       rewardTotal = 0;
       repCount = 0;

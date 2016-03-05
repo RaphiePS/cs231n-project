@@ -27,14 +27,15 @@ class FrameHandler(tornado.web.RequestHandler):
         ar = np.fromstring(base64.decodestring(data["image"]), dtype=np.uint8)
         image = ar.reshape(hp.INPUT_SIZE, hp.INPUT_SIZE)
         left, right, faster, slower = data["action"]
-        terminal, action, reward, was_start = (
+        terminal, action, all_data, was_start = (
             data["terminal"],
             Action(left=left, right=right, faster=faster, slower=slower),
-            data["reward"],
+            data["all_data"],
             data["was_start"]
         )
 
-        print "FRAME NUM: %d" % (agent.frame_count + 1), terminal, action.to_dict(), reward, was_start
+        print "FRAME NUM: %d" % (agent.frame_count + 1), terminal, action.to_dict(), all_data, was_start
+        reward = 0
 
         # TODO
         result_action = agent.step(image=image, reward=reward, terminal=terminal, was_start=was_start, action=action)
