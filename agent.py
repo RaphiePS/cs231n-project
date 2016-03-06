@@ -42,13 +42,13 @@ class Agent(object):
 		return pos <= 0.2 or (pos >= 0.5 and pos <= 0.8)
 
 	def frame_reward(self, frame):
-		
-		if frame['collision'] or abs(frame['position']) > 0.8:
-			return -0.5
-		elif frame['speed'] == 0:
-			return -0.1
+		if frame['collision']:
+			return -1.0
+		elif abs(frame['position']) > 0.8:
+			return -0.8
 		else:
-			return min(1, .2 + (10 * float(frame['speed']) / float(frame['max_speed'])))
+			multiplier = 1.0 if self.in_lane(frame['position']) else 0.5
+			return multiplier * (float(frame['speed']) / float(frame['max_speed']))
 
 	def reward(self, telemetry):
 		return sum([self.frame_reward(frame) for frame in telemetry]) / float(len(telemetry))
