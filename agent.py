@@ -48,7 +48,7 @@ class Agent(object):
 		elif frame['speed'] == 0:
 			return -0.1
 		else:
-			return min(1, .2 + (10 * float(frame['speed']) / float(frame['max_speed']))
+			return min(1, .2 + (10 * float(frame['speed']) / float(frame['max_speed'])))
 
 	def reward(self, telemetry):
 		return sum([self.frame_reward(frame) for frame in telemetry]) / float(len(telemetry))
