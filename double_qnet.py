@@ -151,7 +151,7 @@ with tf.name_scope("loss"):
 
 	# ys is a vector of size minibatch_size which corresponds to y_j in algorithm 1
 	ys = rewards + tf.to_float(1 - terminals) * gamma * tf.reduce_max(t_actions, reduction_indices=1)
-	
+
 	r_actions_flat = tf.reshape(r_actions, [-1])
 
 	# Q(s)[a]
@@ -160,6 +160,6 @@ with tf.name_scope("loss"):
 	loss = tf.reduce_mean(tf.square(ys - gathered))
 
 	# actually perform one gradient descent step
-	optimizer = tf.train.RMSPropOptimizer(hp.LEARNING_RATE, momentum=hp.GRADIENT_MOMENTUM)
+	optimizer = tf.train.RMSPropOptimizer(hp.LEARNING_RATE) #momentum=hp.GRADIENT_MOMENTUM)
 	minimize_loss = optimizer.minimize(loss, var_list=regular)
 
