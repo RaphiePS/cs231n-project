@@ -60,7 +60,7 @@ class Agent(object):
 		print "Transitions saved at frame %d" % self.frame_count
 
 	def save_model(self):
-		path = self.tfSaver.save(self.sess, "/data/q-net")
+		path = self.tfSaver.save(self.sess, "/data/q-net", self.frame_count)
 		print "SAVED MODEL TO PATH: %s" % path
 
 	def save_transitions(self):

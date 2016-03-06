@@ -34,8 +34,6 @@ class FrameHandler(tornado.web.RequestHandler):
             data["was_start"]
         )
 
-        
-
         print "FRAME NUM: %d" % (agent.frame_count + 1), terminal, action.to_dict(), all_data, was_start
 
         # all_data = {collision, position, speed, max_speed} x 4 
