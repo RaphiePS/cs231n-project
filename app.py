@@ -18,8 +18,8 @@ agent = Agent()
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
-        self.redirect("/static/v4.final.html")
-
+        self.redirect("/static/v2.curves.html")
+        # self.redirect("/static/v4.final.html")
 
 class FrameHandler(tornado.web.RequestHandler):
     def post(self):

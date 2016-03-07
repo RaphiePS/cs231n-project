@@ -157,7 +157,12 @@ with tf.name_scope("loss"):
 	# Q(s)[a]
 	# vector of size minibatch, each element is the Q value of taking the action that we took
 	gathered = tf.gather(r_actions_flat, (Action.num_actions * np.arange(hp.MINIBATCH_SIZE)) + actions)
-	loss = tf.reduce_mean(tf.square(ys - gathered))
+	
+	# unclipped version of loss
+	# loss = tf.reduce_mean(tf.square(ys - gathered))
+
+	# clipped version of loss
+	loss = tf.reduce_mean(tf.square(tf.clip_by_value(ys - gathered, -1, 1)))
 
 	# actually perform one gradient descent step
 	optimizer = tf.train.RMSPropOptimizer(hp.LEARNING_RATE) #momentum=hp.GRADIENT_MOMENTUM)
