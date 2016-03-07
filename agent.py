@@ -7,6 +7,7 @@ from transition_table import TransitionTable
 import time
 import pickle
 import sys
+from sys import platform as _platform
 
 class Agent(object):
 	def __init__(self):
@@ -42,13 +43,22 @@ class Agent(object):
 		return pos <= 0.2 or (pos >= 0.5 and pos <= 0.8)
 
 	def frame_reward(self, frame):
-		if frame['collision']:
-			return -1.0
-		elif abs(frame['position']) > 0.8:
-			return -0.8
+		# RAPHIE REWARD FUNC
+		# if frame['collision']:
+		# 	return -1.0
+		# elif abs(frame['position']) > 0.8:
+		# 	return -0.8
+		# else:
+		# 	multiplier = 1.0 if self.in_lane(frame['position']) else 0.5
+		# 	return multiplier * (float(frame['speed']) / float(frame['max_speed']))
+
+		# RISHI REWARD FUNC
+		if frame['collision'] or abs(frame['position']) > 0.8:
+			return -0.5
+		elif frame['speed'] == 0:
+			return -0.1
 		else:
-			multiplier = 1.0 if self.in_lane(frame['position']) else 0.5
-			return multiplier * (float(frame['speed']) / float(frame['max_speed']))
+			return min(1, .2 + (10 * float(frame['speed']) / float(frame['max_speed'])))
 
 	def reward(self, telemetry):
 		return sum([self.frame_reward(frame) for frame in telemetry]) / float(len(telemetry))
@@ -60,12 +70,22 @@ class Agent(object):
 		print "Transitions saved at frame %d" % self.frame_count
 
 	def save_model(self):
-		path = self.tfSaver.save(self.sess, "/data/q-net", self.frame_count)
+		path = ""
+		if _platform == "linux" or _platform == "linux2":
+			path = "/data/q-net"
+		elif _platform == "darwin":
+			path = "./data/q-net"
+
+		path = self.tfSaver.save(self.sess, path, self.frame_count)
 		print "SAVED MODEL TO PATH: %s" % path
 
 	def save_transitions(self):
+		path = ""
+		if _platform == "linux" or _platform == "linux2":
+			path = "/data/transitions.pickle" 
+		elif _platform == "darwin":
+			path = "./data/transitions.pickle" 
 
-		path = "/data/transitions.pickle" 
 		f = open(path, 'w+')
 		to_dump = {'frame_count': self.frame_count, 'transitions': self.transitions}
 		pickle.dump(to_dump, f)
@@ -99,8 +119,8 @@ class Agent(object):
 
 		if self.frame_count % hp.UPDATE_FREQUENCY == 0:
 			s_, t_, a_, r_, sp_ = self.transitions.get_minibatch(self.frame_count)
-			self.sess.run([minimize_loss, loss], feed_dict={s: s_, sp: sp_, actions: a_, rewards: r_, terminals: t_})
-			print loss
+			minimize_loss_, loss_ = self.sess.run([minimize_loss, loss], feed_dict={s: s_, sp: sp_, actions: a_, rewards: r_, terminals: t_})
+			print "Loss: %.2f" % loss_
 			print "Update took %.2f ms" % ((time.time() - t) * 1000)
 
 		if self.frame_count % (hp.UPDATE_FREQUENCY * hp.TARGET_UPDATE_FREQUENCY) == 0:
