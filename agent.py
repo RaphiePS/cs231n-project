@@ -43,22 +43,24 @@ class Agent(object):
 		return pos <= 0.2 or (pos >= 0.5 and pos <= 0.8)
 
 	def frame_reward(self, frame):
-		# RAPHIE REWARD FUNC
-		# if frame['collision']:
-		# 	return -1.0
-		# elif abs(frame['position']) > 0.8:
-		# 	return -0.8
-		# else:
-		# 	multiplier = 1.0 if self.in_lane(frame['position']) else 0.5
-		# 	return multiplier * (float(frame['speed']) / float(frame['max_speed']))
+		# (modified)  RAPHIE REWARD FUNC
+		if frame['collision']:
+			return -1.0
+		elif abs(frame['position']) > 0.8:
+			return -0.8
+		elif float(frame('speed')) == 0:
+			return -1.0
+		else:
+			multiplier = 5.0 if self.in_lane(frame['position']) else 1.0
+			return multiplier * (float(frame['speed']) / float(frame['max_speed']))
 
 		# RISHI REWARD FUNC
-		if frame['collision'] or abs(frame['position']) > 0.8:
-			return -1.0
-		elif frame['speed'] == 0:
-			return -10.0
-		else:
-			return min(10, .2 + (10 * float(frame['speed']) / float(frame['max_speed'])))
+		# if frame['collision'] or abs(frame['position']) > 0.8:
+		# 	return -1.0
+		# elif frame['speed'] == 0:
+		# 	return -10.0
+		# else:
+		# 	return min(10, .2 + (10 * float(frame['speed']) / float(frame['max_speed'])))
 
 	def reward(self, telemetry):
 		return sum([self.frame_reward(frame) for frame in telemetry]) / float(len(telemetry))
