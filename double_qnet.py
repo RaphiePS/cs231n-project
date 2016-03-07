@@ -165,6 +165,6 @@ with tf.name_scope("loss"):
 	loss = tf.reduce_mean(tf.square(tf.clip_by_value(ys - gathered, -1, 1)))
 
 	# actually perform one gradient descent step
-	optimizer = tf.train.RMSPropOptimizer(hp.LEARNING_RATE) #momentum=hp.GRADIENT_MOMENTUM)
+	optimizer = tf.train.RMSPropOptimizer(hp.LEARNING_RATE, momentum=hp.GRADIENT_MOMENTUM, epsilon=0.01, decay=hp.SQUARED_GRADIENT_MOMENTUM)
 	minimize_loss = optimizer.minimize(loss, var_list=regular)
 
