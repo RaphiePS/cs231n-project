@@ -48,7 +48,7 @@ class Agent(object):
 			return -1.0
 		elif abs(frame['position']) > 0.8:
 			return -0.8
-		elif float(frame('speed')) == 0:
+		elif float(frame['speed']) == 0:
 			return -1.0
 		else:
 			multiplier = 5.0 if self.in_lane(frame['position']) else 1.0
