@@ -25,7 +25,7 @@ class FrameHandler(tornado.web.RequestHandler):
     def post(self):
         data = json.loads(self.get_arguments("telemetry")[0])
         ar = np.fromstring(base64.decodestring(self.request.body), dtype=np.uint8)
-        image = ar.reshape(hp.INPUT_SIZE, hp.INPUT_SIZE)
+        image = ar.reshape(hp.INPUT_SIZE, hp.INPUT_SIZE, hp.NUM_CHANNELS)
         left, right, faster, slower = data["action"]
         terminal, action, all_data, was_start = (
             data["terminal"],

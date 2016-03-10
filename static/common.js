@@ -122,19 +122,15 @@ function processFrame(foobaz) {
   var imageData = downsizeCtx.getImageData(0, 0, 84, 84);
   var counter = 0;
   var downsized = ""
-  var lum = [0.2126, 0.7152, 0.0722];
-  var acc = 0;
+  // var lum = [0.2126, 0.7152, 0.0722];
+  // var acc = 0;
   for (var i = 0; i < imageData.data.length; i++) {
     var d = imageData.data[i];
-    switch (i % 4) {
-      case 0: acc += lum[0] * d; continue;
-      case 1: acc += lum[1] * d; continue;
-      case 2:
-        acc += lum[2] * d;
-        downsized += String.fromCharCode(Math.round(acc));
-        acc = 0;
-        continue;
-      case 3: continue;
+    if (i % 4 == 3){
+      continue;
+    }
+    else{
+      downsized += String.fromCharCode(Math.round(d));
     }
   }
   // console.timeEnd("Process")

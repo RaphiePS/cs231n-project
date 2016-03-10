@@ -27,14 +27,14 @@ with tf.name_scope("input"):
 		None,
 		hp.INPUT_SIZE,
 		hp.INPUT_SIZE,
-		hp.AGENT_HISTORY_LENGTH
+		hp.NUM_CHANNELS
 	], name="s")
 
 	sp = tf.placeholder(tf.float32, shape=[
 		None, 
 		hp.INPUT_SIZE,
 		hp.INPUT_SIZE,
-		hp.AGENT_HISTORY_LENGTH
+		hp.NUM_CHANNELS
 	], name="sp")
 
 # this corresponds to Q
@@ -42,7 +42,7 @@ with tf.name_scope("regular_net"):
 	r_W_conv1 = weight_variable([
 		hp.CONV_1_SIZE,
 		hp.CONV_1_SIZE,
-		hp.AGENT_HISTORY_LENGTH,
+		hp.NUM_CHANNELS,
 		hp.CONV_1_DEPTH
 	], name="r_W_conv1")
 	r_b_conv1 = bias_variable([hp.CONV_1_DEPTH], name="r_b_conv1")
@@ -162,7 +162,12 @@ with tf.name_scope("loss"):
 	# loss = tf.reduce_mean(tf.square(ys - gathered))
 
 	# clipped version of loss
-	loss = tf.reduce_mean(tf.square(tf.clip_by_value(ys - gathered, -1, 1)))
+	loss = tf.reduce_mean(tf.square(ys - gathered))
+
+	# Huber version of loss (Andrej's suggestion)
+	unsquared = tf.abs(ys - gathered)
+	squared = tf.square(ys - gathered)
+	loss = tf.reduce_mean(tf.minimum(unsquared, squared))
 
 	# actually perform one gradient descent step
 	optimizer = tf.train.RMSPropOptimizer(hp.LEARNING_RATE) #momentum=hp.GRADIENT_MOMENTUM, epsilon=0.01, decay=hp.SQUARED_GRADIENT_MOMENTUM)
