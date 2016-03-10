@@ -54,17 +54,20 @@ class Agent(object):
 		return sum([self.frame_reward(frame) for frame in telemetry]) / float(len(telemetry))
 
 	def save_all(self):
+		return		
 		self.save_model()
 		print "Model saved at frame %d" % self.frame_count
 		self.save_transitions()
 		print "Transitions saved at frame %d" % self.frame_count
 
 	def save_model(self):
+		return
 		path = self.tfSaver.save(self.sess, "/data/q-net")
 		print "SAVED MODEL TO PATH: %s" % path
 
 	def save_transitions(self):
-
+		return
+		
 		path = "/data/transitions.pickle" 
 		f = open(path, 'w+')
 		to_dump = {'frame_count': self.frame_count, 'transitions': self.transitions}

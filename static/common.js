@@ -117,7 +117,6 @@ function encode() {
 
 function processFrame(foobaz) {
   // console.time("Process")
-  console.log("I AM BEING CALLED", foobaz)
   downsizeImage.src = canvas.toDataURL()
   downsizeCtx.drawImage(downsizeImage, 0, 0, 84, 84)
   var imageData = downsizeCtx.getImageData(0, 0, 84, 84);
@@ -164,7 +163,6 @@ var repCount = 0;
 var datas = []
 var WAS_START = true;
 function telemetry(frame) {
-    var downsized = processFrame()
     var r = reward()
     var all_data = {
       collision: COLLISION_OCCURED,
@@ -175,14 +173,13 @@ function telemetry(frame) {
     if (r.terminal) {
        $.ajax({
           type: 'POST',
-          url: '/frame',
-          data: JSON.stringify({
-            image: downsized,
+          url: '/frame?telemetry=' + JSON.stringify({
             all_data: [all_data],
             terminal: true,
             was_start: WAS_START,
             action: [keyLeft, keyRight, keyFaster, keySlower]
           }),
+          data: processFrame(),
           contentType: "application/json"
       }).done(function(data) {
         location.reload();
@@ -191,16 +188,16 @@ function telemetry(frame) {
     }
     datas.push(all_data)
     if (repCount == actRep) {
+      var stringified = JSON.stringify({
+        all_data: datas,
+        terminal: false,
+        was_start: WAS_START,
+        action: [keyLeft, keyRight, keyFaster, keySlower]
+      })
       $.ajax({
         type: 'POST',
-        url: '/frame',
-        data: JSON.stringify({
-          image: downsized,
-          all_data: datas,
-          terminal: false,
-          was_start: WAS_START,
-          action: [keyLeft, keyRight, keyFaster, keySlower]
-        }),
+        url: '/frame?telemetry=' + stringified,
+        data: processFrame(),
         contentType: "application/json"
       }).done(function(data) {
           data = JSON.parse(data);
