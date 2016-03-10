@@ -93,6 +93,18 @@ class Agent(object):
 		pickle.dump(to_dump, f)
 		f.close()
 
+	def save_initial(self):
+		path = ""
+		if _platform == "linux" or _platform == "linux2":
+			path = "/data/transitions50k.pickle" 
+		elif _platform == "darwin":
+			path = "./data/transitions50k.pickle" 
+
+		f = open(path, 'w+')
+		to_dump = {'frame_count': self.frame_count, 'transitions': self.transitions}
+		pickle.dump(to_dump, f)
+		f.close()
+
 	def epsilon(self):
 		return ((hp.FINAL_EXPLORATION - hp.INITIAL_EXPLORATION) / hp.FINAL_EXPLORATION_FRAME) * self.frame_count + hp.INITIAL_EXPLORATION
 
@@ -113,7 +125,9 @@ class Agent(object):
 			self.timer[-1] = time.time()
 			return best
 
-		if self.frame_count % hp.CHECKPOINT_FREQUENCY == 0:
+		if self.frame_count == hp.REPLAY_START_SIZE:
+			self.save_initial()
+		elif self.frame_count % hp.CHECKPOINT_FREQUENCY == 0:
 			self.save_all()
 
 		if self.frame_count < hp.REPLAY_START_SIZE:
