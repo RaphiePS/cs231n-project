@@ -2,7 +2,7 @@ import numpy as np
 from action import Action
 import hyperparameters as hp
 import tensorflow as tf
-from double_qnet import update_target, minimize_loss, loss, best_action, s, sp, actions, rewards, terminals, all_vars
+from double_qnet import update_target, minimize_loss, loss, best_action, s, sp, actions, rewards, terminals, all_vars, avg_q_val
 from transition_table import TransitionTable
 import time
 import pickle
@@ -18,7 +18,6 @@ class Agent(object):
 		self.timer = dict()
 		self.timer[-1] = time.time()
 		self.test_mode = False
-
 
 		if len(sys.argv) > 2:
 			if sys.argv[2] == "--run":
@@ -44,23 +43,24 @@ class Agent(object):
 
 	def frame_reward(self, frame):
 		# (modified)  RAPHIE REWARD FUNC
-		if frame['collision']:
-			return -1.0
-		elif abs(frame['position']) > 0.8:
-			return -0.8
-		elif float(frame['speed']) == 0:
-			return -1.0
-		else:
-			multiplier = 5.0 if self.in_lane(frame['position']) else 1.0
-			return multiplier * (float(frame['speed']) / float(frame['max_speed']))
 
-		# RISHI REWARD FUNC
-		# if frame['collision'] or abs(frame['position']) > 0.8:
-		# 	return -1.0
-		# elif frame['speed'] == 0:
-		# 	return -10.0
-		# else:
-		# 	return min(10, .2 + (10 * float(frame['speed']) / float(frame['max_speed'])))
+		if hp.REWARD_FUNC == 'raphie':
+			if frame['collision']:
+				return -1.0
+			elif abs(frame['position']) > 0.8:
+				return -0.8
+			elif float(frame['speed']) == 0:
+				return -1.0
+			else:
+				multiplier = 3.0 if self.in_lane(frame['position']) else 0.8
+				return multiplier * (float(frame['speed']) / float(frame['max_speed']))
+		elif hp.REWARD_FUNC == 'rishi':
+			if frame['collision'] or abs(frame['position']) > 0.8:
+				return -5.0
+			elif frame['speed'] == 0:
+				return -10.0
+			else:
+				return min(10, .2 + (5 * float(frame['speed']) / float(frame['max_speed'])))
 
 	def reward(self, telemetry):
 		return sum([self.frame_reward(frame) for frame in telemetry]) / float(len(telemetry))
@@ -121,9 +121,10 @@ class Agent(object):
 
 		if self.frame_count % hp.UPDATE_FREQUENCY == 0:
 			s_, t_, a_, r_, sp_ = self.transitions.get_minibatch(self.frame_count)
-			minimize_loss_, loss_ = self.sess.run([minimize_loss, loss], feed_dict={s: s_, sp: sp_, actions: a_, rewards: r_, terminals: t_})
+			minimize_loss_, loss_, avg_q_val_ = self.sess.run([minimize_loss, loss, avg_q_val], feed_dict={s: s_, sp: sp_, actions: a_, rewards: r_, terminals: t_})
 			print "Loss: %.2f" % loss_
 			print "Update took %.2f ms" % ((time.time() - t) * 1000)
+			print "AverageQValue: %.2f" % avg_q_val_
 
 		if self.frame_count % (hp.UPDATE_FREQUENCY * hp.TARGET_UPDATE_FREQUENCY) == 0:
 			self.sess.run(update_target)

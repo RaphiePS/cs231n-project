@@ -1,3 +1,5 @@
+import os
+
 MINIBATCH_SIZE = 32
 REPLAY_MEMORY_SIZE = 1000000
 AGENT_HISTORY_LENGTH = 1
@@ -36,4 +38,11 @@ CONV_3_STRIDE = 1
 CONV_3_DEPTH = 64
 
 FC_SIZE = 512
+
+UPDATE_RULES = ['rms_mom', 'rms_nomom', 'adam']
+REWARD_FUNCS = ['rishi', 'raphie']
+
+###### Things to change on each instance
+UPDATE_RULE = UPDATE_RULES[int(os.environ['UPDATE_RULE'])]
+REWARD_FUNC = REWARD_FUNCS[int(os.environ['REWARD_FUNC'])]
 

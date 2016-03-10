@@ -79,6 +79,7 @@ with tf.name_scope("regular_net"):
 	# position (i,j) in r_actions is score for action j in minibatch item i
 	r_actions = tf.matmul(r_h_fc1, r_W_out) + r_b_out
 	best_action = tf.argmax(r_actions, 1)
+	avg_q_val = tf.reduce_mean(r_actions) 
 
 # this corresponds to Q_hat
 with tf.name_scope("target_params"):
@@ -167,6 +168,11 @@ with tf.name_scope("loss"):
 	loss = tf.reduce_mean(tf.minimum(unsquared, squared))
 
 	# actually perform one gradient descent step
-	optimizer = tf.train.RMSPropOptimizer(hp.LEARNING_RATE) #momentum=hp.GRADIENT_MOMENTUM, epsilon=0.01, decay=hp.SQUARED_GRADIENT_MOMENTUM)
+	if hp.UPDATE_RULE == 'rms_nomom':
+		optimizer = tf.train.RMSPropOptimizer(hp.LEARNING_RATE) #momentum=hp.GRADIENT_MOMENTUM, epsilon=0.01, decay=hp.SQUARED_GRADIENT_MOMENTUM)
+	elif hp.UPDATE_RULE == 'rms_mom':
+		optimizer = tf.train.RMSPropOptimizer(hp.LEARNING_RATE, momentum=hp.GRADIENT_MOMENTUM, epsilon=0.01, decay=hp.SQUARED_GRADIENT_MOMENTUM)
+	elif hp.UPDATE_RULE == 'adam':
+		optimizer = tf.train.AdamOptimizer()
 	minimize_loss = optimizer.minimize(loss, var_list=regular)
 
