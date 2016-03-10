@@ -161,9 +161,6 @@ with tf.name_scope("loss"):
 	# unclipped version of loss
 	# loss = tf.reduce_mean(tf.square(ys - gathered))
 
-	# clipped version of loss
-	loss = tf.reduce_mean(tf.square(ys - gathered))
-
 	# Huber version of loss (Andrej's suggestion)
 	unsquared = tf.abs(ys - gathered)
 	squared = tf.square(ys - gathered)

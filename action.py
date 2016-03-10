@@ -1,4 +1,5 @@
 import numpy as np
+import hyperparameters as hp
 
 class ActionMeta(type):
     def __init__(cls, name, bases, d):
@@ -13,7 +14,8 @@ class ActionMeta(type):
                     for slower in options:
                         if left and right:
                             continue
-                        if faster and slower:
+                        # if faster and slower:
+                        if slower:
                             continue
                         a = (left, right, faster, slower)
                         cls.action_to_num[a] = counter
@@ -26,8 +28,8 @@ class Action(object):
     
     def __init__(self, num=None, left=False, right=False, faster=False, slower=False):
         if num is not None:
-            if num > 8 or num < 0:
-                raise ValueError("Invalid num, must be 0-8")
+            if num > hp.TOTAL_ACTIONS-1 or num < 0:
+                raise ValueError("Invalid num, must be 0-5")
             self.num = num
         else:
             if left and right:
