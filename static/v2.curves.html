@@ -24,9 +24,9 @@
       <td>
         <select id="resolution" style="width:100%">
           <option value='fine'>Fine (1280x960)</option>
-          <option selected value='high'>High (1024x768)</option>
+          <option  value='high'>High (1024x768)</option>
           <option value='medium'>Medium (640x480)</option>
-          <option value='low'>Low (480x360)</option>
+          <option selected value='low'>Low (480x360)</option>
         </select>
       </td>
     </tr>
@@ -82,12 +82,13 @@
 
   <script src="stats.js"></script>
   <script src="common.js"></script>
+  s<script src="jquery-1.12.0.min.js"></script>
   <script>
 
     var fps           = 60;                      // how many 'update' frames per second
     var step          = 1/fps;                   // how long is each frame (in seconds)
-    var width         = 1024;                    // logical canvas width
-    var height        = 768;                     // logical canvas height
+    var width         = 480;                    // logical canvas width
+    var height        = 360;                     // logical canvas height
     var centrifugal   = 0.3;                     // centrifugal force multiplier when going around curves
     var offRoadDecel  = 0.99;                    // speed multiplier when off road (e.g. you lose 2% speed each update frame)
     var skySpeed      = 0.001;                   // background sky layer scroll speed when going around curve (or up hill)

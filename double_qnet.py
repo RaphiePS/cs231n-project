@@ -142,24 +142,29 @@ with tf.name_scope("updaters"):
 	update_target = tf.group(*target_update)
 
 with tf.name_scope("loss"):
-	actions = tf.placeholder(tf.int32, hp.MINIBATCH_SIZE)
-	rewards = tf.placeholder(tf.float32, hp.MINIBATCH_SIZE)
+	actions = tf.placeholder(tf.int32, hp.MINIBATCH_SIZE, name="actions")
+	rewards = tf.placeholder(tf.float32, hp.MINIBATCH_SIZE, name="rewards")
 
 	# array of zeros/ones
-	terminals = tf.placeholder(tf.int32, hp.MINIBATCH_SIZE)
+	terminals = tf.placeholder(tf.int32, hp.MINIBATCH_SIZE, name="terminals")
 	gamma = tf.constant(hp.DISCOUNT_FACTOR, dtype=tf.float32)
 
 	# ys is a vector of size minibatch_size which corresponds to y_j in algorithm 1
 	ys = rewards + tf.to_float(1 - terminals) * gamma * tf.reduce_max(t_actions, reduction_indices=1)
 
-	
 	r_actions_flat = tf.reshape(r_actions, [-1])
+
 	# Q(s)[a]
 	# vector of size minibatch, each element is the Q value of taking the action that we took
-	gathered = tf.gather(r_actions_flat, hp.MINIBATCH_SIZE * actions)
-	loss = tf.reduce_mean(tf.square(ys - gathered))
+	gathered = tf.gather(r_actions_flat, (Action.num_actions * np.arange(hp.MINIBATCH_SIZE)) + actions)
+	
+	# unclipped version of loss
+	# loss = tf.reduce_mean(tf.square(ys - gathered))
+
+	# clipped version of loss
+	loss = tf.reduce_mean(tf.square(tf.clip_by_value(ys - gathered, -1, 1)))
 
 	# actually perform one gradient descent step
-	optimizer = tf.train.RMSPropOptimizer(hp.LEARNING_RATE, momentum=hp.GRADIENT_MOMENTUM)
+	optimizer = tf.train.RMSPropOptimizer(hp.LEARNING_RATE) #momentum=hp.GRADIENT_MOMENTUM, epsilon=0.01, decay=hp.SQUARED_GRADIENT_MOMENTUM)
 	minimize_loss = optimizer.minimize(loss, var_list=regular)
 
