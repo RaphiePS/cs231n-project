@@ -158,6 +158,7 @@ var actRep = 4;
 var repCount = 0;
 var datas = []
 var WAS_START = true;
+keyFaster = true;
 function telemetry(frame) {
     var r = reward()
     var all_data = {

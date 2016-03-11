@@ -52,8 +52,9 @@ class Agent(object):
 			elif float(frame['speed']) == 0:
 				return -1.0
 			else:
-				multiplier = 3.0 if self.in_lane(frame['position']) else 0.8
+				multiplier = 1.0 if self.in_lane(frame['position']) else 0.8
 				return multiplier * (float(frame['speed']) / float(frame['max_speed']))
+		
 		elif hp.REWARD_FUNC == 'rishi':
 			if frame['collision'] or abs(frame['position']) > 0.8:
 				return -5.0

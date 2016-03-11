@@ -8,7 +8,6 @@ DISCOUNT_FACTOR = 0.99
 ACTION_REPEAT = 4
 UPDATE_FREQUENCY = 4
 
-LEARNING_RATE = 0.0005 # 0.00025
 GRADIENT_MOMENTUM = 0.95
 SQUARED_GRADIENT_MOMENTUM = 0.95
 MIN_SQUARED_GRADIENT = 0.01
@@ -20,7 +19,7 @@ NO_OP_MAX = 30
 
 CHECKPOINT_FREQUENCY = 50000
 
-TOTAL_ACTIONS = 6
+TOTAL_ACTIONS = 3
 
 INPUT_SIZE = 84
 NUM_CHANNELS = 3
@@ -43,6 +42,10 @@ UPDATE_RULES = ['rms_mom', 'rms_nomom', 'adam']
 REWARD_FUNCS = ['rishi', 'raphie']
 
 ###### Things to change on each instance
-UPDATE_RULE = UPDATE_RULES[int(os.environ['UPDATE_RULE'])]
-REWARD_FUNC = REWARD_FUNCS[int(os.environ['REWARD_FUNC'])]
+
+UPDATE_RULE = UPDATE_RULES[int(os.environ.get('UPDATE_RULE', 0))]
+REWARD_FUNC = REWARD_FUNCS[int(os.environ.get('REWARD_FUNC', 1))]
+LEARNING_RATE = float(os.environ.get('LR', 0.0005))
+
+
 

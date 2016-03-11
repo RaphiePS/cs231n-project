@@ -17,6 +17,8 @@ class ActionMeta(type):
                         # if faster and slower:
                         if slower:
                             continue
+                        if not faster:
+                            continue
                         a = (left, right, faster, slower)
                         cls.action_to_num[a] = counter
                         cls.num_to_action[counter] = a
