@@ -128,8 +128,10 @@ class Agent(object):
 
 		if self.frame_count == hp.REPLAY_START_SIZE:
 			self.save_initial()
-		elif self.frame_count % hp.CHECKPOINT_FREQUENCY == 0:
+		elif self.frame_count % hp.CHECKPOINT_FREQUENCY == 0 and self.frame_count < 600000:
 			self.save_all()
+		elif self.frame_count % hp.CHECKPOINT_FREQUENCY == 0:
+			self.save_model()
 
 		if self.frame_count < hp.REPLAY_START_SIZE:
 			return Action.random_action()
