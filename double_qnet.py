@@ -151,7 +151,15 @@ with tf.name_scope("loss"):
 	gamma = tf.constant(hp.DISCOUNT_FACTOR, dtype=tf.float32)
 
 	# ys is a vector of size minibatch_size which corresponds to y_j in algorithm 1
-	ys = rewards + tf.to_float(1 - terminals) * gamma * tf.reduce_max(t_actions, reduction_indices=1)
+	
+	# DOUBLE DQN IMPLEMENTATION
+	selected_actions = tf.argmax(r_actions, 1)
+	t_actions_flat = tf.reshape(t_actions, [-1])
+	t_actions_selected = tf.gather(t_actions_flat, Action.num_actions * np.arange(hp.MINIBATCH_SIZE) + selected_actions)
+
+	ys = rewards + tf.to_float(1 - terminals) * gamma * t_actions_selected
+	# ys = rewards + tf.to_float(1 - terminals) * gamma * tf.reduce_max(t_actions, reduction_indices=1)
+
 
 	r_actions_flat = tf.reshape(r_actions, [-1])
 
