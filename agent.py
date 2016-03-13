@@ -126,6 +126,8 @@ class Agent(object):
 		self.transitions.add_transition(image, terminal, action, reward, was_start, telemetry)
 
 		if self.test_mode:
+			if self.frame_count < hp.TEST_RANDOMNESS:
+				return Action.random_action()
 			img = self.transitions.get_recent()
 			print "Getting recent transitions took %.2f ms" % ((time.time() - t) * 1000)
 			t = time.time()
