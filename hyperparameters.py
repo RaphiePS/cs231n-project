@@ -45,7 +45,7 @@ REWARD_FUNCS = ['rishi', 'raphie']
 
 UPDATE_RULE = UPDATE_RULES[int(os.environ.get('UPDATE_RULE', 0))]
 REWARD_FUNC = REWARD_FUNCS[int(os.environ.get('REWARD_FUNC', 1))]
-LEARNING_RATE = float(os.environ.get('LR', 0.0005))
+LEARNING_RATE = float(os.environ.get('LR', 0.0001))
 
 
 

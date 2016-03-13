@@ -25,6 +25,14 @@ class Agent(object):
 				self.tfSaver.restore(self.sess, path)
 				print "RESTORED MODEL FROM PATH: %s" % path
 				self.test_mode = True
+			elif sys.argv[2] == "--train":
+				path = sys.argv[1]
+				f = open(path, 'r')
+				to_restore = pickle.load(f)
+				f.close()
+				self.frame_count, self.transitions = to_restore['frame_count'], to_restore['transitions']
+				print "RESTORED TRANSITIONS FROM PATH %s to FRAME COUNT %d" % (path, self.frame_count)
+				self.sess.run(tf.initialize_all_variables())
 			else:
 				path = sys.argv[1]
 				self.tfSaver.restore(self.sess, path)
