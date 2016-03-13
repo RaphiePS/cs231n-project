@@ -165,7 +165,8 @@ function telemetry(frame) {
       collision: COLLISION_OCCURED,
       position: playerX,
       speed: speed,
-      max_speed: maxSpeed
+      max_speed: maxSpeed,
+      progress: position / trackLength
     }
     if (r.terminal) {
        $.ajax({

@@ -39,7 +39,7 @@ class FrameHandler(tornado.web.RequestHandler):
         # all_data = {collision, position, speed, max_speed} x 4 
         # abs(position) > 0.8 implies off road
         reward = agent.reward(all_data)
-        print "Current reward = %.2f" % reward
+        print "Current reward = %.4f" % reward
 
         result_action = agent.step(image=image, reward=reward, terminal=terminal, was_start=was_start, action=action, telemetry=all_data)
         self.write(json.dumps(result_action.to_dict()))

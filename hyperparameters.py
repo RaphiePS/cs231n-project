@@ -39,7 +39,7 @@ CONV_3_DEPTH = 64
 FC_SIZE = 512
 
 UPDATE_RULES = ['rms_mom', 'rms_nomom', 'adam']
-REWARD_FUNCS = ['rishi', 'raphie']
+REWARD_FUNCS = ['rishi', 'raphie', 'position']
 
 ###### Things to change on each instance
 
