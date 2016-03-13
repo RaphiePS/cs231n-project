@@ -33,6 +33,11 @@ class Agent(object):
 				self.frame_count, self.transitions = to_restore['frame_count'], to_restore['transitions']
 				print "RESTORED TRANSITIONS FROM PATH %s to FRAME COUNT %d" % (path, self.frame_count)
 				self.sess.run(tf.initialize_all_variables())
+			elif sys.argv[2] == '--moreframes':
+				path = sys.argv[1]
+				self.tfSaver.restore(self.sess, path)
+				print "RESTORED MODEL FROM PATH: %s" % path
+				self.sess.run(tf.initialize_all_variables())
 			else:
 				path = sys.argv[1]
 				self.tfSaver.restore(self.sess, path)
